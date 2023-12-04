@@ -6,11 +6,7 @@ import time
 import re
 import csv
 import itertools
-from concurrent.futures import ProcessPoolExecutor, as_completed
-import platform
-
-
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # When denominator's precision will bug out to be equal zero.
 SMALL_FLOAT = 2.2250738585072014e-308
@@ -192,8 +188,9 @@ def benchmark(colony, iterations):
     end_cost = colony.run_algorithm(iterations)
     end_time = time.time()
     run_time = end_time - start_time
-    print(f"{len(colony.matrix)} :  {colony.best_path}    time: {run_time}")
-    writer.writerow([colony.matrix,colony.best_path,run_time])
+    print(f"{start_time} , {end_time}, {end_time - start_time}")
+    writer.writerow([colony.N,run_time,end_cost,colony.best_path])
+
     return run_time, end_cost, colony.best_path
 
 
@@ -213,13 +210,11 @@ def run_algorithm_and_write(args):
         suma += end_cost
         results.append([file_name, run_time, end_cost, rotate(path)])
     print(f"{file_name}: {round((((suma/tries) - opt_cost)/opt_cost)*100,2)}")
-    return suma
+    return run_time
 
 results = []
 
 if __name__ == '__main__':
-    python_version = platform.python_version()
-    print(f"Wersja Pythona: {python_version}")
     start_time_thread = time.time()
     alpha = 1.0
     beta = 3.0
@@ -232,7 +227,7 @@ if __name__ == '__main__':
 
     results = []
 
-    with ProcessPoolExecutor() as executor:
+    with ThreadPoolExecutor() as executor:
         futures = [
             executor.submit(
                 run_algorithm_and_write,
